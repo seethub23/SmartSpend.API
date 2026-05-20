@@ -62,7 +62,8 @@ namespace SmartSpend.API.Services
                 PaymentMethod = dto.PaymentMethod,
                 TransactionDate = dto.TransactionDate,
                 IsRecurring = dto.IsRecurring,
-                Notes = dto.Notes
+                Notes = dto.Notes,
+                CreatedDate = DateTime.UtcNow
             };
             _dbContext.Transactions.Add(newTransaction);
             await _dbContext.SaveChangesAsync();
