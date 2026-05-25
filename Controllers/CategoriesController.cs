@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SmartSpend.API.Data;
+using SmartSpend.API.DTOs;
 using SmartSpend.API.Helpers;
+using SmartSpend.API.Interfaces;
 
 namespace SmartSpend.API.Controllers
 {
@@ -11,43 +11,52 @@ namespace SmartSpend.API.Controllers
     [Route("api/[controller]")]
     public class CategoriesController : BaseController
     {
-        private readonly SmartSpendDbContext _context;
+        private readonly ICategoryService _categoryService;
 
-        public CategoriesController(SmartSpendDbContext context, JwtHelper jwtHelper) : base(jwtHelper)
+        public CategoriesController(
+            ICategoryService categoryService,
+            JwtHelper jwtHelper) : base(jwtHelper)
         {
-            _context = context;
+            _categoryService = categoryService;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllCategories()
+        public async Task<IActionResult> GetAll()
         {
-            var categories = await _context.Categories
-                .Select(c => new
-                {
-                    c.CategoryId,
-                    c.Name,
-                    c.Type,
-                    c.IsDefault
-                })
-                .ToListAsync();
-
-            return Ok(categories);
+            var result = await _categoryService.GetAll();
+            return Ok(result);
         }
 
         [HttpGet("{type}")]
-        public async Task<IActionResult> GetCategoriesByType(string type)
+        public async Task<IActionResult> GetByType(string type)
         {
-            var categories = await _context.Categories
-                .Where(c => c.Type == type)
-                .Select(c => new
-                {
-                    c.CategoryId,
-                    c.Name,
-                    c.Type
-                })
-                .ToListAsync();
+            var result = await _categoryService.GetByType(type);
+            return Ok(result);
+        }
 
-            return Ok(categories);
+        [HttpPost]
+        public async Task<IActionResult> Add([FromBody] AddCategoryDto dto)
+        {
+            var result = await _categoryService.Add(dto);
+            return Ok(result);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                var result = await _categoryService.Delete(id);
+                if (!result) return NotFound(new
+                {
+                    message = "Category not found or is a default category!"
+                });
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
     }
 }

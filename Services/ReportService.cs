@@ -29,13 +29,16 @@ namespace SmartSpend.API.Services
                 .Where(t => t.Type == "Expense")
                 .Sum(t => t.Amount);
 
-            var totalSavings = totalIncome - totalExpense;
+            var totalSavings = transactions
+                .Where(t => t.Type == "Savings")
+                .Sum(t => t.Amount);
 
             return new
             {
                 TotalIncome = totalIncome,
                 TotalExpense = totalExpense,
                 TotalSavings = totalSavings,
+                NetBalance = totalIncome - totalExpense - totalSavings,
                 Month = month,
                 Year = year
             };
