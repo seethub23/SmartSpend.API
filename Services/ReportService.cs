@@ -15,21 +15,29 @@ namespace SmartSpend.API.Services
 
         public async Task<object> GetDashboardSummary(int userId, int month, int year)
         {
-            var transactions = await _context.Transactions
+            // Income and Expense -- current month only!
+            var monthlyTransactions = await _context.Transactions
                 .Where(t => t.UserId == userId
                     && t.TransactionDate.Month == month
                     && t.TransactionDate.Year == year)
                 .ToListAsync();
 
-            var totalIncome = transactions
+            var totalIncome = monthlyTransactions
                 .Where(t => t.Type == "Income")
                 .Sum(t => t.Amount);
 
-            var totalExpense = transactions
+            var totalExpense = monthlyTransactions
                 .Where(t => t.Type == "Expense")
                 .Sum(t => t.Amount);
 
-            var totalSavings = transactions
+            // Savings -- ALL TIME total! accumulated!
+            var totalSavings = await _context.Transactions
+                .Where(t => t.UserId == userId
+                    && t.Type == "Savings")
+                .SumAsync(t => t.Amount);
+
+            // This month savings separately for reference
+            var thisMonthSavings = monthlyTransactions
                 .Where(t => t.Type == "Savings")
                 .Sum(t => t.Amount);
 
@@ -38,7 +46,8 @@ namespace SmartSpend.API.Services
                 TotalIncome = totalIncome,
                 TotalExpense = totalExpense,
                 TotalSavings = totalSavings,
-                NetBalance = totalIncome - totalExpense - totalSavings,
+                ThisMonthSavings = thisMonthSavings,
+                NetBalance = totalIncome - totalExpense,
                 Month = month,
                 Year = year
             };

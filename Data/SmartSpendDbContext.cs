@@ -44,6 +44,8 @@ namespace SmartSpend.API.Data
             // Transactions table mapping
             modelBuilder.Entity<Transaction>(entity =>
             {
+                entity.ToTable("transactions", t =>
+                    t.HasTrigger("TR_Transactions_BudgetAlert"));
                 entity.ToTable("transactions");
                 entity.HasKey(e => e.TransactionId);
                 entity.Property(e => e.TransactionId).HasColumnName("transaction_id");
