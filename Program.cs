@@ -5,6 +5,7 @@ using Microsoft.OpenApi.Models;
 using SmartSpend.API.Data;
 using SmartSpend.API.Helpers;
 using SmartSpend.API.Interfaces;
+using SmartSpend.API.Middleware;
 using SmartSpend.API.Services;
 using System.Text;
 
@@ -100,6 +101,9 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 var app = builder.Build();
 
 // 6. Middleware pipeline
+// Middleware is configured here in C#. It wraps all middleware below it.
+app.UseCustomExceptionHandling();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
